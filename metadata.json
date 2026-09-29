@@ -1,0 +1,6 @@
+{
+  "name": "Be Shad Trader - Distribution, Inventory & Accounting SaaS",
+  "description": "Enterprise distribution, multi-warehouse inventory, modern POS, double-entry accounting, and sales force automation SaaS. Presented by Hayeshad Media.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

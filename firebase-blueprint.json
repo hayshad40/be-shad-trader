@@ -1,0 +1,215 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "User profile with role-based access information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "format": "email", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "role": {
+          "type": "string",
+          "enum": [
+            "SUPER_ADMIN",
+            "TENANT_OWNER",
+            "BUSINESS_ADMIN",
+            "MANAGER",
+            "ACCOUNTANT",
+            "SALES_MANAGER",
+            "SALESMAN",
+            "ORDER_TAKER",
+            "WAREHOUSE_MANAGER",
+            "WAREHOUSE_STAFF",
+            "CASHIER",
+            "DELIVERY_STAFF",
+            "REPORT_VIEWER"
+          ]
+        },
+        "tenantId": { "type": "string", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "email", "name", "role", "tenantId"]
+    },
+    "tenant": {
+      "title": "Tenant",
+      "description": "Multi-tenant business organization",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "businessType": { "type": "string", "maxLength": 64 },
+        "slug": { "type": "string", "maxLength": 64 },
+        "currency": { "type": "string", "maxLength": 10 },
+        "currencySymbol": { "type": "string", "maxLength": 10 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "email": { "type": "string", "format": "email", "maxLength": 128 },
+        "address": { "type": "string", "maxLength": 256 },
+        "city": { "type": "string", "maxLength": 64 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "currency", "phone", "email"]
+    },
+    "product": {
+      "title": "Product",
+      "description": "Inventory product item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "tenantId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "sku": { "type": "string", "maxLength": 64 },
+        "barcode": { "type": "string", "maxLength": 64 },
+        "category": { "type": "string", "maxLength": 64 },
+        "brand": { "type": "string", "maxLength": 64 },
+        "unit": { "type": "string", "maxLength": 32 },
+        "purchasePrice": { "type": "number" },
+        "salePrice": { "type": "number" },
+        "wholesalePrice": { "type": "number" },
+        "retailPrice": { "type": "number" },
+        "minStock": { "type": "number" },
+        "currentStock": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "inactive"] }
+      },
+      "required": ["id", "tenantId", "name", "sku", "category", "salePrice"]
+    },
+    "customer": {
+      "title": "Customer",
+      "description": "Customer and client profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "tenantId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "company": { "type": "string", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "email": { "type": "string", "maxLength": 128 },
+        "address": { "type": "string", "maxLength": 256 },
+        "city": { "type": "string", "maxLength": 64 },
+        "area": { "type": "string", "maxLength": 64 },
+        "creditLimit": { "type": "number" },
+        "openingBalance": { "type": "number" },
+        "currentBalance": { "type": "number" }
+      },
+      "required": ["id", "tenantId", "name", "phone"]
+    },
+    "supplier": {
+      "title": "Supplier",
+      "description": "Supplier profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "tenantId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "company": { "type": "string", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "email": { "type": "string", "maxLength": 128 },
+        "address": { "type": "string", "maxLength": 256 },
+        "openingBalance": { "type": "number" },
+        "currentBalance": { "type": "number" }
+      },
+      "required": ["id", "tenantId", "name", "company", "phone"]
+    },
+    "order": {
+      "title": "Order",
+      "description": "Sales order and billing invoice",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "tenantId": { "type": "string", "maxLength": 128 },
+        "orderNumber": { "type": "string", "maxLength": 64 },
+        "type": { "type": "string", "enum": ["sales_order", "quotation", "invoice", "pos_sale", "sale_return"] },
+        "customerId": { "type": "string", "maxLength": 128 },
+        "customerName": { "type": "string", "maxLength": 128 },
+        "warehouseId": { "type": "string", "maxLength": 128 },
+        "subtotal": { "type": "number" },
+        "discountAmount": { "type": "number" },
+        "taxAmount": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "paidAmount": { "type": "number" },
+        "balanceAmount": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["paid", "partial", "unpaid"] },
+        "orderStatus": {
+          "type": "string",
+          "enum": ["draft", "pending", "approved", "picking", "packed", "dispatched", "delivered", "partially_delivered", "cancelled", "returned"]
+        },
+        "orderDate": { "type": "string" },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "tenantId", "orderNumber", "customerId", "customerName", "totalAmount", "orderStatus"]
+    },
+    "expense": {
+      "title": "Expense",
+      "description": "Operating business expense record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "tenantId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 128 },
+        "category": { "type": "string", "maxLength": 64 },
+        "amount": { "type": "number" },
+        "paymentMethod": { "type": "string", "maxLength": 32 },
+        "date": { "type": "string" },
+        "createdBy": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "tenantId", "title", "category", "amount", "date"]
+    },
+    "warehouse": {
+      "title": "Warehouse",
+      "description": "Physical warehouse facility",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "tenantId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "code": { "type": "string", "maxLength": 32 },
+        "city": { "type": "string", "maxLength": 64 },
+        "address": { "type": "string", "maxLength": 256 },
+        "isMain": { "type": "boolean" }
+      },
+      "required": ["id", "tenantId", "name", "code", "city"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "User profiles and role information"
+    },
+    "/tenants/{tenantId}": {
+      "schema": "tenant",
+      "description": "Tenant businesses"
+    },
+    "/products/{productId}": {
+      "schema": "product",
+      "description": "Product catalog and stock information"
+    },
+    "/customers/{customerId}": {
+      "schema": "customer",
+      "description": "Customer ledger and directory"
+    },
+    "/suppliers/{supplierId}": {
+      "schema": "supplier",
+      "description": "Supplier contacts and payables ledger"
+    },
+    "/orders/{orderId}": {
+      "schema": "order",
+      "description": "Sales orders and field bookings"
+    },
+    "/expenses/{expenseId}": {
+      "schema": "expense",
+      "description": "Operational expense logs"
+    },
+    "/warehouses/{warehouseId}": {
+      "schema": "warehouse",
+      "description": "Warehouse facilities"
+    },
+    "/test/{testId}": {
+      "schema": "user",
+      "description": "Connection test collection"
+    }
+  }
+}

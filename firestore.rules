@@ -1,0 +1,125 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default-deny all by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reusable validation primitives
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'hayshad40@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Connection test document
+    match /test/{testId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(userId) && (
+        (request.auth.uid == userId && incoming().id == userId && incoming().keys().hasAll(['id', 'email', 'name', 'role', 'tenantId'])) ||
+        isAdmin()
+      );
+      allow update: if isSignedIn() && isValidId(userId) && (
+        isAdmin() ||
+        (request.auth.uid == userId && incoming().id == existing().id && incoming().email == existing().email)
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Tenants collection
+    match /tenants/{tenantId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Products collection
+    match /products/{productId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(productId) &&
+        incoming().tenantId is string && incoming().tenantId.size() <= 128 &&
+        incoming().name is string && incoming().name.size() <= 128 &&
+        incoming().sku is string && incoming().sku.size() <= 64;
+      allow delete: if isAdmin();
+    }
+
+    // Customers collection
+    match /customers/{customerId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(customerId) &&
+        incoming().tenantId is string && incoming().tenantId.size() <= 128 &&
+        incoming().name is string && incoming().name.size() <= 128;
+      allow delete: if isAdmin();
+    }
+
+    // Suppliers collection
+    match /suppliers/{supplierId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(supplierId) &&
+        incoming().tenantId is string && incoming().tenantId.size() <= 128 &&
+        incoming().name is string && incoming().name.size() <= 128;
+      allow delete: if isAdmin();
+    }
+
+    // Orders collection
+    match /orders/{orderId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(orderId) &&
+        incoming().tenantId is string && incoming().tenantId.size() <= 128 &&
+        incoming().orderNumber is string && incoming().orderNumber.size() <= 64 &&
+        incoming().totalAmount is number;
+      allow update: if isSignedIn() && isValidId(orderId) && (
+        isAdmin() || (
+          // Terminal state protection
+          existing().orderStatus != 'delivered' &&
+          existing().orderStatus != 'cancelled' &&
+          incoming().tenantId == existing().tenantId &&
+          incoming().orderNumber == existing().orderNumber
+        )
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Expenses collection
+    match /expenses/{expenseId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(expenseId) &&
+        incoming().tenantId is string && incoming().tenantId.size() <= 128 &&
+        incoming().title is string && incoming().title.size() <= 128 &&
+        incoming().amount is number;
+      allow delete: if isAdmin();
+    }
+
+    // Warehouses collection
+    match /warehouses/{warehouseId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(warehouseId) &&
+        incoming().tenantId is string && incoming().tenantId.size() <= 128 &&
+        incoming().name is string && incoming().name.size() <= 128;
+      allow delete: if isAdmin();
+    }
+  }
+}
